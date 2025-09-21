@@ -18,10 +18,10 @@ credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
 if not credentials_json:
     raise ValueError("GOOGLE_CREDENTIALS не найден! Установите Secret в Render.")
 
-creds_dict = json.loads(credentials_json)
+credentials_dict = json.loads(credentials_json)
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(creds)
+client = gspread.authorize(credentials)
 
 SPREADSHEET_NAME = "Заявки OpenStudy"
 sheet = client.open(SPREADSHEET_NAME).worksheet("Лист1")
