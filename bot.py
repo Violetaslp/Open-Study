@@ -13,7 +13,7 @@ if not TOKEN:
 bot = telebot.TeleBot(TOKEN)
 
 # --- Google Sheets через Secret файл ---
-CREDENTIALS_PATH = "/etc/secrets/creditenials.json"
+CREDENTIALS_PATH = "/etc/secrets/credentials.json"
 if not os.path.exists(CREDENTIALS_PATH):
     raise FileNotFoundError(f"Файл {CREDENTIALS_PATH} не найден! Проверьте Secret на Render.")
 
