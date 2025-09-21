@@ -1,5 +1,3 @@
-import os
-import json
 import telebot
 from telebot import types
 import gspread
@@ -7,27 +5,16 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
 # --- Telegram Token ---
+import os
 TOKEN = os.environ.get("TOKEN")
 if not TOKEN:
     raise ValueError("TOKEN не найден! Установите переменную окружения на Render.")
 
 bot = telebot.TeleBot(TOKEN)
 
-# --- Google Sheets Credentials ---
-creds_json = os.environ.get("GOOGLE_CREDENTIALS")
-if not creds_json:
-    raise ValueError("GOOGLE_CREDENTIALS не найден! Установите Secret в Render.")
-
-# Преобразуем JSON в словарь
-creds_dict = json.loads(creds_json)
-
-# **Исправление для private_key**
-# Заменяем двойной слеш \n на реальные переносы строк
-creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
-
-# Настройка доступа к Google Sheets
+# --- Google Sheets через файл creditenials.json ---
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name("creditenials.json", scope)
 client = gspread.authorize(creds)
 
 # Открываем таблицу и лист
@@ -70,7 +57,6 @@ def get_phone(message):
         bot.send_message(message.chat.id, "❌ Ошибка при записи в Google Sheets. Попробуйте позже.")
         print(f"Ошибка Google Sheets: {e}")
 
-    # Удаляем данные пользователя из временного хранилища
     del user_data[message.chat.id]
 
 if __name__ == "__main__":
