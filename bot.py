@@ -13,20 +13,24 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 
+# --- Google Sheets Credentials ---
 creds_json = os.environ.get("GOOGLE_CREDENTIALS")
 if not creds_json:
     raise ValueError("GOOGLE_CREDENTIALS не найден! Установите Secret в Render.")
 
+# Преобразуем JSON в словарь
 creds_dict = json.loads(creds_json)
 
-creds_dict = json.loads(credentials_json)
+# Настройка доступа к Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
-client = gspread.authorize(credentials)
+client = gspread.authorize(creds)
 
+# Открываем таблицу и лист
 SPREADSHEET_NAME = "Заявки OpenStudy"
 sheet = client.open(SPREADSHEET_NAME).worksheet("Лист1")
 
+# --- Временное хранилище данных пользователя ---
 user_data = {}
 
 # --- Команды бота ---
@@ -55,9 +59,14 @@ def get_phone(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Запись в Google Sheets
-    sheet.append_row([timestamp, data["name"], data["phone"], data["type"], data["username"], False])
+    try:
+        sheet.append_row([timestamp, data["name"], data["phone"], data["type"], data["username"], False])
+        bot.send_message(message.chat.id, f"✅ Ваша заявка на '{data['type']}' принята!")
+    except Exception as e:
+        bot.send_message(message.chat.id, "❌ Ошибка при записи в Google Sheets. Попробуйте позже.")
+        print(f"Ошибка Google Sheets: {e}")
 
-    bot.send_message(message.chat.id, f"✅ Ваша заявка на '{data['type']}' принята!")
+    # Удаляем данные пользователя из временного хранилища
     del user_data[message.chat.id]
 
 if __name__ == "__main__":
