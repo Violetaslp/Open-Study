@@ -21,6 +21,10 @@ if not creds_json:
 # Преобразуем JSON в словарь
 creds_dict = json.loads(creds_json)
 
+# **Исправление для private_key**
+# Заменяем двойной слеш \n на реальные переносы строк
+creds_dict["private_key"] = creds_dict["private_key"].replace("\\n", "\n")
+
 # Настройка доступа к Google Sheets
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
