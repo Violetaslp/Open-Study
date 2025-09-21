@@ -13,10 +13,11 @@ if not TOKEN:
 
 bot = telebot.TeleBot(TOKEN)
 
-# --- Google Sheets через Secret ---
-credentials_json = os.environ.get("GOOGLE_CREDENTIALS")
-if not credentials_json:
+creds_json = os.environ.get("GOOGLE_CREDENTIALS")
+if not creds_json:
     raise ValueError("GOOGLE_CREDENTIALS не найден! Установите Secret в Render.")
+
+creds_dict = json.loads(creds_json)
 
 credentials_dict = json.loads(credentials_json)
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
