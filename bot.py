@@ -1,3 +1,4 @@
+import os
 import telebot
 from telebot import types
 import gspread
@@ -5,23 +6,24 @@ from oauth2client.service_account import ServiceAccountCredentials
 from datetime import datetime
 
 # --- Telegram Token ---
-import os
 TOKEN = os.environ.get("TOKEN")
 if not TOKEN:
     raise ValueError("TOKEN не найден! Установите переменную окружения на Render.")
 
 bot = telebot.TeleBot(TOKEN)
 
-# --- Google Sheets через файл creditenials.json ---
+# --- Google Sheets через Secret файл ---
+CREDENTIALS_PATH = "/etc/secrets/creditenials.json"
+if not os.path.exists(CREDENTIALS_PATH):
+    raise FileNotFoundError(f"Файл {CREDENTIALS_PATH} не найден! Проверьте Secret на Render.")
+
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
-creds = ServiceAccountCredentials.from_json_keyfile_name("creditenials.json", scope)
+creds = ServiceAccountCredentials.from_json_keyfile_name(CREDENTIALS_PATH, scope)
 client = gspread.authorize(creds)
 
-# Открываем таблицу и лист
 SPREADSHEET_NAME = "Заявки OpenStudy"
 sheet = client.open(SPREADSHEET_NAME).worksheet("Лист1")
 
-# --- Временное хранилище данных пользователя ---
 user_data = {}
 
 # --- Команды бота ---
@@ -50,13 +52,9 @@ def get_phone(message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
     # Запись в Google Sheets
-    try:
-        sheet.append_row([timestamp, data["name"], data["phone"], data["type"], data["username"], False])
-        bot.send_message(message.chat.id, f"✅ Ваша заявка на '{data['type']}' принята!")
-    except Exception as e:
-        bot.send_message(message.chat.id, "❌ Ошибка при записи в Google Sheets. Попробуйте позже.")
-        print(f"Ошибка Google Sheets: {e}")
+    sheet.append_row([timestamp, data["name"], data["phone"], data["type"], data["username"], False])
 
+    bot.send_message(message.chat.id, f"✅ Ваша заявка на '{data['type']}' принята!")
     del user_data[message.chat.id]
 
 if __name__ == "__main__":
