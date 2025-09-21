@@ -19,7 +19,7 @@ if not creds_json:
 
 creds_dict = json.loads(creds_json)
 
-credentials_dict = json.loads(credentials_json)
+creds_dict = json.loads(credentials_json)
 scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
 creds = ServiceAccountCredentials.from_json_keyfile_dict(creds_dict, scope)
 client = gspread.authorize(credentials)
